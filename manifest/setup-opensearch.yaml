@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS CloudFormation for OpenSearch
+
+Resources:
+  OpenSearchDomain:
+    Type: "AWS::OpenSearchService::Domain"
+    Properties:
+      DomainName: !Sub "chatbot-${AWS::StackName}"
+      EngineVersion: "OpenSearch_2.13"
+      ClusterConfig:
+        InstanceType: "r6g.large.search"
+        InstanceCount: 1
+        DedicatedMasterEnabled: false
+        ZoneAwarenessEnabled: false
+      EBSOptions:
+        EBSEnabled: true
+        VolumeType: "gp3"
+        VolumeSize: 100
+      NodeToNodeEncryptionOptions:
+        Enabled: true
+      EncryptionAtRestOptions:
+        Enabled: true
+      AdvancedSecurityOptions:
+        Enabled: true
+        InternalUserDatabaseEnabled: true
+        MasterUserOptions:
+          MasterUserName: "raguser"
+          MasterUserPassword: "MarsEarth1!"
+      DomainEndpointOptions:
+        EnforceHTTPS: true
+        TLSSecurityPolicy: "Policy-Min-TLS-1-2-2019-07"
+      AccessPolicies:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal: "*"
+            Action: "es:*"
+            Resource: "*"
+
+Outputs:
+  DomainEndpoint:
+    Description: "Endpoint for the OpenSearch domain."
+    Value: !Sub "https://${OpenSearchDomain.DomainEndpoint}"
+
+  DashboardURL:
+    Description: "URL to access the OpenSearch Dashboards."
+    Value: !Sub "https://${OpenSearchDomain.DomainEndpoint}:443/app/opensearch_dashboards"
+
+  UserID:
+    Description: "User ID for OpenSearch domain."
+    Value: "raguser"
+
+  UserPassword:
+    Description: "Password for OpenSearch domain."
+    Value: "MarsEarth1!"
